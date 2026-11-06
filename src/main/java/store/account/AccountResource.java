@@ -2,27 +2,42 @@ package store.account;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Controller
 public class AccountResource implements AccountController {
 
+    @Autowired
+    private AccountService accountService;
+
     @Override
     public ResponseEntity<Void> create(AccountIn in) {
-        // TODO Auto-generated method stub
-        return null;
+        final String id = accountService.create(
+            AccountParser.to(in)
+        ).id();
+        return ResponseEntity.created(
+            ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(id)
+                .toUri()
+        ).build();
     }
 
     @Override
     public ResponseEntity<List<AccountOut>> findAll() {
-        // TODO Auto-generated method stub
-        return null;
+        return ResponseEntity
+            .ok(AccountParser.to(accountService.findAll()));
     }
 
     @Override
     public ResponseEntity<Void> delete(String id) {
-        // TODO Auto-generated method stub
+        accountService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -35,15 +50,9 @@ public class AccountResource implements AccountController {
 
     @Override
     public ResponseEntity<AccountOut> findById(String id) {
-        // just an example
-        AccountOut out = AccountOut.builder()
-            .name("John")
-            .email("JAlbert@xpto.gov")
-            .id("1345")
-            .build();
-        return ResponseEntity.ok(
-            out
-        );
+        final Account a = accountService.findById(id);
+        if (a == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        return ResponseEntity.ok(AccountParser.to(a));
     }
 
 }
