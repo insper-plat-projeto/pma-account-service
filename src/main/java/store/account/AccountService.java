@@ -53,6 +53,21 @@ public class AccountService {
             .orElse(null);
     }
 
+    public Account findByEmailAndPassword(String email, String password) {
+        if (password == null || password.isEmpty()) {
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST, "Password is empty"
+            );
+        }
+        // create() hashes the trimmed password, so login must do the same
+        final String hash = calcHash(password.trim());
+        return accountRepository.findByEmailAndHashPassword(email, hash)
+            .map(AccountModel::to)
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED, "Invalid credentials"
+            ));
+    }
+
     public void delete(String id) {
         accountRepository.deleteById(id);
     }
