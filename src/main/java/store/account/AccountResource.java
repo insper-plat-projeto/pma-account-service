@@ -3,6 +3,7 @@ package store.account;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -10,6 +11,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Controller
+@CrossOrigin(origins = {"http://localhost:3000", "http://127.0.0.1:3000"}, exposedHeaders = "Location")
 public class AccountResource implements AccountController {
 
     @Autowired
@@ -53,6 +55,14 @@ public class AccountResource implements AccountController {
         final Account a = accountService.findById(id);
         if (a == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         return ResponseEntity.ok(AccountParser.to(a));
+    }
+
+    @Override
+    public ResponseEntity<AccountOut> login(AccountIn in) {
+        return ResponseEntity
+            .ok(AccountParser.to(
+                accountService.findByEmailAndPassword(in.email(), in.password())
+            ));
     }
 
 }
