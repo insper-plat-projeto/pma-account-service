@@ -7,6 +7,8 @@ import java.util.Base64;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -46,11 +48,15 @@ public class AccountService {
         ).to();
     }
 
+    // read-through cache: Redis key accounts::<id>, TTL from spring.cache.redis.time-to-live
+    // a missing id throws 404 and never returns null, so nothing is cached for it
+    @Cacheable(value = "accounts", key = "#id")
     public Account findById(String id) {
-        // null when the id does not exist: AccountResource answers 404
         return accountRepository.findById(id)
             .map(AccountModel::to)
-            .orElse(null);
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Account not found"
+            ));
     }
 
     public Account findByEmailAndPassword(String email, String password) {
@@ -68,6 +74,8 @@ public class AccountService {
             ));
     }
 
+    // a deleted account must not keep answering from the cache
+    @CacheEvict(value = "accounts", key = "#id")
     public void delete(String id) {
         accountRepository.deleteById(id);
     }
