@@ -23,6 +23,15 @@ spring:
       port: ${REDIS_PORT:6379}
   cache:
     type: redis
+    cache-names: accounts # created at startup: only caches that exist then get metrics
     redis:
       time-to-live: 300000    # 5 minutes in milliseconds
       cache-null-values: false
+      enable-statistics: true # exports cache_gets_total{result="hit|miss"} to Prometheus
+
+management:
+  endpoints:
+    web:
+      base-path: /accounts/actuator # under the service prefix: /accounts/actuator/prometheus
+      exposure:
+        include: ['prometheus']     # only the metrics endpoint is opened
