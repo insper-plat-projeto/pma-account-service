@@ -3,13 +3,11 @@ package store.account;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @Controller
-@CrossOrigin(origins = {"http://localhost:3000", "http://127.0.0.1:3000"}, exposedHeaders = "Location")
 public class AccountResource implements AccountController {
 
     @Autowired
